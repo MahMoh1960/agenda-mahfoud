@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1128">
+<title>Agenda – Mahfou's APK</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="splash">
+  <div id="logo">Mahfou's APK</div>
+  <div id="logoSub">Agenda • أجندة</div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <h1 data-i="title">Agenda</h1>
+    <div class="hbtns">
+      <button id="btnLang" class="ibtn" aria-label="Langue">ع / FR</button>
+      <button id="btnSettings" class="ibtn" aria-label="Réglages">⚙</button>
+    </div>
+  </header>
+
+  <div class="bar">
+    <input id="search" type="search" data-p="search">
+    <select id="filterCat"></select>
+  </div>
+
+  <nav id="tabs">
+    <button data-v="today" class="on" data-i="tToday">Aujourd'hui</button>
+    <button data-v="week" data-i="tWeek">Semaine</button>
+    <button data-v="month" data-i="tMonth">Mois</button>
+    <button data-v="late" data-i="tLate">En retard</button>
+    <button data-v="done" data-i="tDone">Terminées</button>
+    <button data-v="hist" data-i="tHist">Historique</button>
+  </nav>
+
+  <main id="view"></main>
+  <button id="fab" aria-label="Ajouter">+</button>
+</div>
+
+<div id="modal" class="modal" hidden>
+  <form id="form" class="sheet">
+    <h2 id="formTitle"></h2>
+    <label><span data-i="fTitle">Titre</span>
+      <div class="row"><input id="fTitle" required maxlength="120"><button type="button" id="btnMic" class="ibtn" aria-label="Micro">🎤</button></div>
+    </label>
+    <label><span data-i="fNotes">Notes</span><textarea id="fNotes" rows="2"></textarea></label>
+    <div class="row2">
+      <label><span data-i="fDate">Date</span><input type="date" id="fDate" required></label>
+      <label><span data-i="fTime">Heure</span><input type="time" id="fTime" required></label>
+    </div>
+    <div class="row2">
+      <label><span data-i="fPrio">Priorité</span>
+        <select id="fPrio"></select></label>
+      <label><span data-i="fCat">Catégorie</span>
+        <select id="fCat"></select></label>
+    </div>
+    <label><span data-i="fRepeat">Répétition</span>
+      <select id="fRepeat"></select></label>
+    <div id="daysBox" class="chips" hidden></div>
+    <div><span class="lbl" data-i="fRem">Rappels avant l'échéance</span>
+      <div id="remBox" class="chips"></div></div>
+    <div class="row2">
+      <label><span data-i="fSound">Sonnerie</span><select id="fSound"></select></label>
+      <label class="chk"><input type="checkbox" id="fVib" checked><span data-i="fVib">Vibration</span></label>
+    </div>
+    <div class="actions">
+      <button type="button" id="btnCancel" class="btn sec" data-i="cancel">Annuler</button>
+      <button type="submit" class="btn" data-i="save">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div id="setModal" class="modal" hidden>
+  <div class="sheet">
+    <h2 data-i="settings">Réglages</h2>
+    <button class="btn full" id="btnNotif" data-i="enableNotif">Activer les notifications</button>
+    <label class="chk"><input type="checkbox" id="sSummary"><span data-i="sSummary">Résumé quotidien</span></label>
+    <label><span data-i="sSummaryTime">Heure du résumé</span><input type="time" id="sSummaryTime" value="07:00"></label>
+    <label><span data-i="sDefSound">Sonnerie par défaut</span><select id="sSound"></select></label>
+    <button class="btn full sec" id="btnTest" data-i="test">Tester la sonnerie</button>
+    <hr>
+    <button class="btn full sec" id="btnExportJson" data-i="expJson">Exporter (JSON)</button>
+    <button class="btn full sec" id="btnExportTxt" data-i="expTxt">Exporter (TXT)</button>
+    <button class="btn full sec" id="btnExportIcs" data-i="expIcs">Exporter vers le calendrier (.ics)</button>
+    <button class="btn full sec" id="btnImport" data-i="imp">Importer (JSON)</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+    <hr>
+    <div class="tips"><b data-i="batTitle">Fiabilité des alarmes</b>
+      <p data-i="batTxt"></p></div>
+    <div class="actions"><button class="btn" id="btnCloseSet" data-i="close">Fermer</button></div>
+  </div>
+</div>
+
+<div id="alertModal" class="modal" hidden>
+  <div class="sheet alert">
+    <div class="bell">🔔</div>
+    <h2 id="alTitle"></h2>
+    <p id="alWhen"></p>
+    <div class="actions col">
+      <button class="btn" id="alDone" data-i="aDone">Terminé</button>
+      <button class="btn sec" id="alSnooze" data-i="aSnooze">Reporter 10 min</button>
+      <button class="btn sec" id="alOpen" data-i="aOpen">Ouvrir</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
