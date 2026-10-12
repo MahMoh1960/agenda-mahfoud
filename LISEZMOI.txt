@@ -1,4 +1,4 @@
-Agenda - Mahfou's APK
+Agenda - MAHFOUD's APK
 Tous les fichiers sont à la racine (aucun dossier) : à déposer tels quels dans le dépôt GitHub.
 Ensuite : Settings > Pages > Deploy from a branch > main / (root), puis empaqueter l'adresse obtenue en APK (PWABuilder).
 Fichiers : index.html, style.css, app.js, sw.js, manifest.json, icon-192.png, icon-512.png

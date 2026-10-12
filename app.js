@@ -1,4 +1,4 @@
-/* Agenda – Mahfou's APK */
+/* Agenda – MAHFOUD's APK */
 (function () {
 'use strict';
 
@@ -22,7 +22,7 @@ function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch 
 const I18N = {
   fr: {
     title: 'Agenda', tToday: "Aujourd'hui", tWeek: 'Semaine', tMonth: 'Mois', tLate: 'En retard', tDone: 'Terminées', tHist: 'Historique',
-    search: 'Rechercher…', allCats: 'Toutes catégories',
+    search: 'Rechercher…', allCats: 'Toutes',
     fTitle: 'Titre', fNotes: 'Notes', fDate: 'Date', fTime: 'Heure', fPrio: 'Priorité', fCat: 'Catégorie', fRepeat: 'Répétition',
     fRem: "Rappels avant l'échéance", fSound: 'Sonnerie', fVib: 'Vibration', cancel: 'Annuler', save: 'Enregistrer', close: 'Fermer',
     newTask: 'Nouvelle tâche', editTask: 'Modifier la tâche',
@@ -47,7 +47,7 @@ const I18N = {
   },
   ar: {
     title: 'أجندة', tToday: 'اليوم', tWeek: 'الأسبوع', tMonth: 'الشهر', tLate: 'متأخرة', tDone: 'المنجزة', tHist: 'السجل',
-    search: 'بحث…', allCats: 'كل الفئات',
+    search: 'بحث…', allCats: 'الكل',
     fTitle: 'العنوان', fNotes: 'ملاحظات', fDate: 'التاريخ', fTime: 'الساعة', fPrio: 'الأولوية', fCat: 'الفئة', fRepeat: 'التكرار',
     fRem: 'تذكيرات قبل الموعد', fSound: 'النغمة', fVib: 'اهتزاز', cancel: 'إلغاء', save: 'حفظ', close: 'إغلاق',
     newTask: 'مهمة جديدة', editTask: 'تعديل المهمة',
@@ -444,9 +444,9 @@ $('#btnExportIcs').onclick = () => {
   const ev = tasks.filter(t => !t.done).map(t => {
     const s = parseDT(t.due), e = new Date(s.getTime() + 3600000);
     const al = (t.reminders || [0]).map(o => `BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:${t.title.replace(/[\r\n,;]/g, ' ')}\r\nTRIGGER:-PT${o}M\r\nEND:VALARM`).join('\r\n');
-    return ['BEGIN:VEVENT', 'UID:' + t.id + '@mahfou-agenda', 'DTSTAMP:' + icsDate(fmtDT(new Date())) , 'DTSTART:' + icsDate(t.due), 'DTEND:' + icsDate(fmtDT(e)), 'SUMMARY:' + t.title.replace(/[\r\n,;]/g, ' '), t.notes ? 'DESCRIPTION:' + t.notes.replace(/[\r\n,;]/g, ' ') : '', rr(t), al, 'END:VEVENT'].filter(Boolean).join('\r\n');
+    return ['BEGIN:VEVENT', 'UID:' + t.id + '@mahfoud-agenda', 'DTSTAMP:' + icsDate(fmtDT(new Date())) , 'DTSTART:' + icsDate(t.due), 'DTEND:' + icsDate(fmtDT(e)), 'SUMMARY:' + t.title.replace(/[\r\n,;]/g, ' '), t.notes ? 'DESCRIPTION:' + t.notes.replace(/[\r\n,;]/g, ' ') : '', rr(t), al, 'END:VEVENT'].filter(Boolean).join('\r\n');
   });
-  download('agenda-' + fmtDate(new Date()) + '.ics', 'text/calendar;charset=utf-8', 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Mahfou APK//Agenda//FR\r\n' + ev.join('\r\n') + '\r\nEND:VCALENDAR');
+  download('agenda-' + fmtDate(new Date()) + '.ics', 'text/calendar;charset=utf-8', 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MAHFOUD APK//Agenda//FR\r\n' + ev.join('\r\n') + '\r\nEND:VCALENDAR');
 };
 $('#btnImport').onclick = () => $('#fileImport').click();
 $('#fileImport').onchange = e => {
