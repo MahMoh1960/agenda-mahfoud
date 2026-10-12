@@ -33,7 +33,7 @@ const I18N = {
     rem: { 0: "À l'heure", 10: '10 min avant', 30: '30 min avant', 60: '1 h avant', 1440: '1 jour avant' },
     sounds: { beep: 'Bip', bell: 'Cloche', siren: 'Sirène', none: 'Silencieux' },
     settings: 'Réglages', enableNotif: 'Activer les notifications', sSummary: 'Résumé quotidien', sSummaryTime: 'Heure du résumé',
-    sDefSound: 'Sonnerie par défaut', test: 'Tester la sonnerie', expJson: 'Exporter (JSON)', expTxt: 'Exporter (TXT)',
+    sDefSound: 'Sonnerie par défaut', sRing: 'Durée de la sonnerie', ringOpts: { 10: '10 secondes', 30: '30 secondes', 60: '1 minute', 120: '2 minutes', 300: '5 minutes', 0: "Jusqu'à l'arrêt" }, test: 'Tester la sonnerie', expJson: 'Exporter (JSON)', expTxt: 'Exporter (TXT)',
     expIcs: 'Exporter vers le calendrier (.ics)', imp: 'Importer (JSON)',
     batTitle: 'Fiabilité des alarmes',
     batTxt: "• Gardez l'application ouverte ou installée sur l'écran d'accueil.\n• Paramètres Android > Applications > cette appli > Batterie : choisissez « Sans restriction ».\n• Autorisez les notifications.\n• Les tâches manquées (téléphone éteint ou appli fermée) sont signalées au prochain lancement.\n• Les heures suivent le fuseau horaire et l'heure d'été du téléphone.",
@@ -58,7 +58,7 @@ const I18N = {
     rem: { 0: 'في الوقت', 10: 'قبل 10 دقائق', 30: 'قبل 30 دقيقة', 60: 'قبل ساعة', 1440: 'قبل يوم' },
     sounds: { beep: 'صفير', bell: 'جرس', siren: 'صفارة', none: 'صامت' },
     settings: 'الإعدادات', enableNotif: 'تفعيل الإشعارات', sSummary: 'ملخص يومي', sSummaryTime: 'ساعة الملخص',
-    sDefSound: 'النغمة الافتراضية', test: 'تجربة النغمة', expJson: 'تصدير (JSON)', expTxt: 'تصدير (TXT)',
+    sDefSound: 'النغمة الافتراضية', sRing: 'مدة الرنين', ringOpts: { 10: '10 ثوانٍ', 30: '30 ثانية', 60: 'دقيقة', 120: 'دقيقتان', 300: '5 دقائق', 0: 'حتى الإيقاف' }, test: 'تجربة النغمة', expJson: 'تصدير (JSON)', expTxt: 'تصدير (TXT)',
     expIcs: 'تصدير إلى التقويم (.ics)', imp: 'استيراد (JSON)',
     batTitle: 'موثوقية المنبهات',
     batTxt: '• أبقِ التطبيق مفتوحًا أو مثبتًا على الشاشة الرئيسية.\n• إعدادات أندرويد > التطبيقات > هذا التطبيق > البطارية: اختر «بدون قيود».\n• اسمح بالإشعارات.\n• المهام الفائتة (الهاتف مطفأ أو التطبيق مغلق) تظهر عند التشغيل التالي.\n• التوقيت يتبع المنطقة الزمنية والتوقيت الصيفي للهاتف.',
@@ -75,7 +75,7 @@ const I18N = {
 /* ---------- État ---------- */
 const CATS = ['these', 'cours', 'admin', 'perso', 'autre'];
 const REMS = [0, 10, 30, 60, 1440];
-let settings = Object.assign({ lang: 'fr', summary: false, summaryTime: '07:00', sound: 'beep', lastSummary: '' }, load('ag_settings', {}));
+let settings = Object.assign({ lang: 'fr', summary: false, summaryTime: '07:00', sound: 'beep', ringSec: 60, lastSummary: '' }, load('ag_settings', {}));
 let tasks = load('ag_tasks', []);
 let history = load('ag_hist', []);
 let view = 'today';
@@ -106,6 +106,21 @@ function playSound(name) {
   if (name === 'bell') { [0, 0.9, 1.8].forEach(t => { tone(880, t, 0.9, 'sine', 0.5); tone(1320, t, 0.7, 'sine', 0.25); }); }
   else if (name === 'siren') { for (let i = 0; i < 6; i++) tone(i % 2 ? 600 : 900, i * 0.4, 0.4, 'square', 0.25); }
   else { for (let i = 0; i < 4; i++) { tone(1000, i * 0.5, 0.18, 'square', 0.3); tone(1000, i * 0.5 + 0.22, 0.18, 'square', 0.3); } }
+}
+let ringTimer = null, ringStopTimer = null;
+function stopRing() {
+  clearInterval(ringTimer); clearTimeout(ringStopTimer); ringTimer = ringStopTimer = null;
+  try { navigator.vibrate && navigator.vibrate(0); } catch (e) {}
+}
+function startRing(name, vib) {
+  stopRing();
+  const len = { beep: 2.3, bell: 3.0, siren: 2.6 }[name] || 2.3;
+  const once = () => { playSound(name); if (vib) vibrate(); };
+  once();
+  if (name === 'none' && !vib) return;
+  ringTimer = setInterval(once, Math.round((len + 0.4) * 1000));
+  const sec = +settings.ringSec;
+  if (sec > 0) ringStopTimer = setTimeout(stopRing, sec * 1000);
 }
 function vibrate() { try { navigator.vibrate && navigator.vibrate([400, 200, 400, 200, 600]); } catch (e) {} }
 
@@ -174,8 +189,7 @@ function fireAlert(t, off, missed) {
   const L = T();
   const body = (off ? L.rem[off] + ' • ' : '') + fmtTime(parseDT(t.due)) + (missed ? ' • ' + L.missed : '');
   notify('⏰ ' + t.title, body, 'task-' + t.id, t);
-  if (t.vib !== false) vibrate();
-  playSound(t.sound || settings.sound);
+  startRing(t.sound || settings.sound, t.vib !== false);
   showAlert(t, body);
 }
 
@@ -298,6 +312,8 @@ function applyLang() {
   $('#fRepeat').innerHTML = Object.keys(L.rep).map(k => `<option value="${k}">${L.rep[k]}</option>`).join('');
   const snd = Object.keys(L.sounds).map(k => `<option value="${k}">${L.sounds[k]}</option>`).join('');
   $('#fSound').innerHTML = snd; $('#sSound').innerHTML = snd;
+  $('#sRing').innerHTML = Object.keys(L.ringOpts).map(k => `<option value="${k}">${L.ringOpts[k]}</option>`).join('');
+  $('#sRing').value = String(settings.ringSec);
   $('#sSound').value = settings.sound;
   $('#sSummary').checked = !!settings.summary;
   $('#sSummaryTime').value = settings.summaryTime;
@@ -407,16 +423,16 @@ $('#filterCat').addEventListener('change', render);
 $('#fab').onclick = () => openForm(null, view === 'month' ? fmtDate(selDay) : null);
 
 /* ---------- Alerte plein écran ---------- */
-function hideAlert() { $('#alertModal').hidden = true; alertTask = null; }
+function hideAlert() { stopRing(); $('#alertModal').hidden = true; alertTask = null; }
 $('#alDone').onclick = () => { const t = tasks.find(x => x.id === alertTask); if (t) completeTask(t); hideAlert(); render(); };
 $('#alSnooze').onclick = () => { const t = tasks.find(x => x.id === alertTask); if (t) { t.snoozeUntil = Date.now() + 600000; persist(); toast(T().snoozed); } hideAlert(); };
 $('#alOpen').onclick = () => { const id = alertTask; hideAlert(); if (id) openForm(id); };
 
 /* ---------- Réglages ---------- */
 $('#btnSettings').onclick = () => $('#setModal').hidden = false;
-$('#btnCloseSet').onclick = () => { settings.summary = $('#sSummary').checked; settings.summaryTime = $('#sSummaryTime').value || '07:00'; settings.sound = $('#sSound').value; persist(); $('#setModal').hidden = true; };
+$('#btnCloseSet').onclick = () => { settings.summary = $('#sSummary').checked; settings.summaryTime = $('#sSummaryTime').value || '07:00'; settings.sound = $('#sSound').value; settings.ringSec = +$('#sRing').value; persist(); $('#setModal').hidden = true; };
 $('#btnLang').onclick = () => { settings.lang = settings.lang === 'fr' ? 'ar' : 'fr'; persist(); applyLang(); };
-$('#btnTest').onclick = () => { playSound($('#sSound').value); vibrate(); };
+$('#btnTest').onclick = () => { stopRing(); playSound($('#sSound').value); vibrate(); };
 $('#btnNotif').onclick = askNotif;
 function askNotif() {
   if (!('Notification' in window)) return toast('Non supporté / Unsupported');
